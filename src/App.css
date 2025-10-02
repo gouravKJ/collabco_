@@ -1,3 +1,7 @@
+/* Global dark background per theme */
+html, body, #root {
+  background: #000000;
+}
 .App {
   text-align: center;
 }
