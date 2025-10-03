@@ -75,8 +75,7 @@ export default function Home() {
       alert("Please enter a project ID");
       return;
     }
-    // If we're in the logged-in view, we already have a token
-    // Just navigate directly to the editor
+
     navigate(`/editor/${joinId}`);
   };
 
@@ -104,7 +103,7 @@ export default function Home() {
   if (!token) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#000000] via-[#0a0a0f] to-[#000000] text-[#e6e6e9]">
-        {/* Navigation */}
+        
         <nav className="fixed top-0 w-full bg-[#0b0b0c]/80 backdrop-blur-md border-b border-[#66666e]/20 z-50">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <div className="flex items-center space-x-2">
@@ -120,7 +119,7 @@ export default function Home() {
           </div>
         </nav>
 
-        {/* Hero Section */}
+       
         <div className="flex-1 flex items-center justify-center px-6 pt-20">
           <div className="max-w-6xl mx-auto text-center">
             <div className="mb-8 inline-block">
@@ -142,7 +141,6 @@ export default function Home() {
               and instant code execution. Work together seamlessly, from anywhere.
             </p>
 
-            {/* Join Project Card */}
             <div className="max-w-md mx-auto mb-16">
               <div className="bg-[#141416]/50 backdrop-blur-sm p-8 rounded-2xl border border-[#66666e]/30 shadow-2xl">
                 <h3 className="text-xl font-semibold mb-4">Join a Project</h3>
@@ -162,7 +160,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Features Grid */}
+    
             <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
               <div className="bg-[#141416]/30 backdrop-blur-sm p-6 rounded-xl border border-[#66666e]/20 hover:border-purple-500/50 transition">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
@@ -189,7 +187,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Stats */}
+    
             <div className="flex justify-center gap-12 mb-16 text-center">
               <div>
                 <div className="text-3xl font-bold text-purple-400">5+</div>
@@ -207,7 +205,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Footer */}
         <footer className="bg-[#0b0b0c]/50 backdrop-blur-sm border-t border-[#66666e]/20 py-8">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -234,8 +231,6 @@ export default function Home() {
       </div>
     );
   }
-
-  // Logged-in Dashboard
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#000000] via-[#0a0a0f] to-[#000000] text-[#e6e6e9]">
       <div className="max-w-7xl mx-auto px-6 py-12">
@@ -247,9 +242,9 @@ export default function Home() {
           <p className="text-[#9999a1]">Manage your projects and start collaborating</p>
         </div>
 
-        {/* Action Cards Grid */}
+     
         <div className="grid md:grid-cols-2 gap-6 mb-12">
-          {/* Create Project Card */}
+         
           <div className="bg-[#141416]/50 backdrop-blur-sm p-8 rounded-2xl border border-[#66666e]/30 shadow-xl hover:border-purple-500/50 transition">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -274,7 +269,7 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Join Project Card */}
+   
           <div className="bg-[#141416]/50 backdrop-blur-sm p-8 rounded-2xl border border-[#66666e]/30 shadow-xl hover:border-blue-500/50 transition">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
@@ -300,7 +295,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Projects List */}
+        
         <div className="bg-[#141416]/50 backdrop-blur-sm p-8 rounded-2xl border border-[#66666e]/30 shadow-xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
