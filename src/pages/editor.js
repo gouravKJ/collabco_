@@ -42,7 +42,7 @@ export default function EditorPage() {
 
     const initializeEditor = async () => {
       try {
-        // Step 1: Get current user info
+      
         console.log("Step 1: Fetching current user info...");
         const userRes = await fetch(`${BACKEND_URL}/api/user/me`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -56,11 +56,9 @@ export default function EditorPage() {
           navigate("/login");
           return;
         }
-
         const userData = await userRes.json();
         console.log("User data received:", userData);
         
-        // Backend returns userId, id, or _id - try all of them
         let fetchedUserId = userData.userId || userData.id || userData._id;
         let fetchedUsername = userData.username;
         
@@ -71,7 +69,6 @@ export default function EditorPage() {
           return;
         }
         
-        // IMPORTANT: Always use the fresh userId and username from the API
         const userIdStr = String(fetchedUserId).trim();
         localStorage.setItem("userId", userIdStr);
         
@@ -84,7 +81,7 @@ export default function EditorPage() {
         console.log("Current User ID (fresh from API):", userIdStr);
         console.log("Current Username (fresh from API):", fetchedUsername);
 
-        // Step 2: Get project info
+       
         console.log("Step 2: Fetching project info...");
         const projectRes = await fetch(`${BACKEND_URL}/api/projects/${projectId}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -129,15 +126,12 @@ export default function EditorPage() {
           isOwner: ownerStatus,
           areEqual: ownerIdStr === userIdFromApi
         });
-
-        // Set debug info for display
         setDebugInfo({
           projectOwner: ownerIdStr,
           currentUser: userIdFromApi,
           isOwner: ownerStatus
         });
 
-        // Set ownership in both state and ref to prevent changes
         setIsOwner(ownerStatus);
         isOwnerRef.current = ownerStatus;
         
@@ -151,7 +145,7 @@ export default function EditorPage() {
 
         setLoading(false);
 
-        // Step 4: Initialize socket connection
+    
         console.log("Step 3: Initializing socket connection...");
         const socket = io(SOCKET_URL, { transports: ["websocket"] });
         socketRef.current = socket;
@@ -178,7 +172,7 @@ export default function EditorPage() {
               // Update the code
               model.setValue(incomingCode);
               
-              // Restore cursor position and selection
+    
               if (position) {
                 editorRef.current.setPosition(position);
               }
@@ -308,7 +302,7 @@ export default function EditorPage() {
   const handleSave = async () => {
     console.log("Save button clicked. isOwner:", isOwner, "isOwnerRef:", isOwnerRef.current);
     
-    // Use ref value as source of truth
+   
     if (!isOwnerRef.current && !isOwner) {
       alert("Only owner can save");
       return;
