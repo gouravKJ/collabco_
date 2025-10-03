@@ -1,1 +1,1 @@
-export const BACKEND_URL = "https://collabco-backend.onrender.com/";
+export const BACKEND_URL = "https://collabco-backend.onrender.com";

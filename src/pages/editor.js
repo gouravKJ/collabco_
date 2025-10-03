@@ -30,7 +30,7 @@ export default function EditorPage() {
 
   const socketRef = useRef(null);
   const editorRef = useRef(null);
-  const isOwnerRef = useRef(false); // Store ownership in ref to prevent changes
+  const isOwnerRef = useRef(false);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -164,10 +164,27 @@ export default function EditorPage() {
 
         socket.on("receivecode", ({ code: incomingCode }) => {
           console.log("Received code update via socket");
+          
           if (editorRef.current) {
             const model = editorRef.current.getModel();
-            if (model && incomingCode !== model.getValue()) {
+            const currentCode = model.getValue();
+            
+            // Only update if the code is actually different
+            if (currentCode !== incomingCode) {
+              // Save cursor position and selection
+              const position = editorRef.current.getPosition();
+              const selection = editorRef.current.getSelection();
+              
+              // Update the code
               model.setValue(incomingCode);
+              
+              // Restore cursor position and selection
+              if (position) {
+                editorRef.current.setPosition(position);
+              }
+              if (selection) {
+                editorRef.current.setSelection(selection);
+              }
             }
           }
           setCode(incomingCode);
@@ -232,12 +249,17 @@ export default function EditorPage() {
   const handleEditorMount = (editor) => {
     editorRef.current = editor;
 
+    // Debounce code change emissions to reduce socket traffic
+    const debouncedCodeChange = debounce((code) => {
+      if (suggestMode && !isOwner) return;
+      const username = localStorage.getItem("username") || "Guest";
+      socketRef.current?.emit("codechange", { projectId, code, username });
+    }, 300); // Wait 300ms after user stops typing
+
     editor.onDidChangeModelContent(() => {
       const current = editor.getValue();
       setCode(current);
-      if (suggestMode && !isOwner) return;
-      const username = localStorage.getItem("username") || "Guest";
-      socketRef.current?.emit("codechange", { projectId, code: current, username });
+      debouncedCodeChange(current);
     });
 
     const debouncedCursorUpdate = debounce((sel) => {
@@ -343,7 +365,10 @@ export default function EditorPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#000000] text-[#e6e6e9]">
-        <div className="text-xl">Loading editor...</div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          <div className="text-xl">Loading editor...</div>
+        </div>
       </div>
     );
   }
@@ -351,34 +376,28 @@ export default function EditorPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#000000] text-[#e6e6e9]">
       {/* Top Bar */}
-      <div className="flex justify-between bg-[#0b0b0c] text-[#e6e6e9] p-2 border-b border-[#66666e]/30">
-        <div className="flex gap-3">
-          <span>Project: {projectId}</span>
+      <div className="flex flex-col sm:flex-row sm:justify-between bg-[#0b0b0c] text-[#e6e6e9] p-3 sm:p-2 border-b border-[#66666e]/30 gap-2">
+        <div className="flex flex-wrap gap-2 sm:gap-3 text-sm">
+          <span className="truncate max-w-[150px] sm:max-w-none">Project: {projectId}</span>
           <span>User: <b>{currentUsername || localStorage.getItem("username") || "Guest"}</b></span>
           <span className={`font-bold ${isOwner ? 'text-green-400' : 'text-yellow-400'}`}>
             {isOwner ? "🔑 Owner" : "👥 Collaborator"}
           </span>
-          {/* Debug info - remove after fixing */}
-          {debugInfo && (
-            <span className="text-xs text-gray-500">
-              (Debug: Owner={debugInfo.projectOwner.slice(0,8)}... User={debugInfo.currentUser.slice(0,8)}... Match={debugInfo.isOwner ? '✓' : '✗'})
-            </span>
-          )}
         </div>
-        <div className="flex gap-2 items-center">
-          <label>Suggest Mode</label>
-          <input type="checkbox" checked={suggestMode} onChange={() => setSuggestMode(!suggestMode)} />
+        <div className="flex gap-2 items-center flex-wrap">
+          <label className="text-sm">Suggest Mode</label>
+          <input type="checkbox" checked={suggestMode} onChange={() => setSuggestMode(!suggestMode)} className="w-4 h-4" />
           {(isOwner || isOwnerRef.current) && (
             <button 
               onClick={handleSave} 
-              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded font-semibold"
+              className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded font-semibold text-sm"
             >
               💾 Save
             </button>
           )}
           <button 
             onClick={() => navigate("/")} 
-            className="bg-[#66666e] hover:bg-[#9999a1] text-[#0b0b0c] px-3 py-1 rounded"
+            className="bg-[#66666e] hover:bg-[#9999a1] text-[#0b0b0c] px-3 py-2 rounded text-sm"
           >
             Exit
           </button>
@@ -386,13 +405,14 @@ export default function EditorPage() {
       </div>
 
       {/* Editor + Sidebar */}
-      <div className="flex flex-1">
-        <div className="flex-1 flex flex-col">
-          <div className="flex gap-2 p-2 bg-[#141416] text-[#e6e6e9] border-b border-[#66666e]/30">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+        {/* Editor Section */}
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex gap-2 p-2 bg-[#141416] text-[#e6e6e9] border-b border-[#66666e]/30 flex-wrap">
             <select 
               value={languageId} 
               onChange={(e) => setLanguageId(Number(e.target.value))} 
-              className="bg-[#0b0b0c] text-[#f4f4f6] border border-[#66666e]/30 rounded px-2 py-1"
+              className="bg-[#0b0b0c] text-[#f4f4f6] border border-[#66666e]/30 rounded px-3 py-2 text-sm"
             >
               <option value={52}>JavaScript (Node.js)</option>
               <option value={71}>Python 3</option>
@@ -402,96 +422,122 @@ export default function EditorPage() {
             </select>
             <button 
               onClick={handleRun} 
-              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded font-semibold"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold text-sm"
             >
               ▶ Run
             </button>
           </div>
-          <Editor 
-            height="60vh" 
-            defaultLanguage="javascript" 
-            value={code} 
-            theme="vs-dark" 
-            onMount={handleEditorMount} 
-          />
-          <div className="bg-black text-green-400 p-2 h-40 overflow-y-auto border-t border-[#66666e]/30">
-            <pre>{output}</pre>
+          <div className="flex-1 min-h-[300px] lg:min-h-0">
+            <Editor 
+              height="100%" 
+              defaultLanguage="javascript" 
+              value={code} 
+              theme="vs-dark" 
+              onMount={handleEditorMount}
+              options={{
+                fontSize: 14,
+                minimap: { enabled: window.innerWidth > 768 },
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+                lineNumbers: 'on',
+                glyphMargin: false,
+                folding: window.innerWidth > 768,
+                lineDecorationsWidth: 10,
+                lineNumbersMinChars: 3
+              }}
+            />
+          </div>
+          <div className="bg-black text-green-400 p-3 h-32 sm:h-40 overflow-y-auto border-t border-[#66666e]/30">
+            <pre className="text-xs sm:text-sm">{output}</pre>
           </div>
         </div>
 
-        <div className="w-80 bg-[#0b0b0c] text-[#e6e6e9] p-2 flex flex-col border-l border-[#66666e]/30">
-          {/* Chat */}
-          <h3 className="font-bold text-lg mb-2">💬 Chat</h3>
-          <div className="flex-1 overflow-y-auto bg-[#141416] p-2 mb-2 rounded border border-[#66666e]/30 max-h-48">
-            {messages.map((m, i) => (
-              <div key={i} className="text-sm mb-1">
-                <b className="text-blue-400">{m.from}</b>: {m.message}
-              </div>
-            ))}
-          </div>
-          <form onSubmit={handleSendChat} className="flex mb-3">
-            <input 
-              value={chatInput} 
-              onChange={(e) => setChatInput(e.target.value)} 
-              placeholder="Type a message..." 
-              className="flex-1 bg-[#0b0b0c] text-[#f4f4f6] placeholder-[#9999a1] border border-[#66666e]/30 p-2 rounded"
-            />
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 ml-2 rounded">Send</button>
-          </form>
-
-          {/* Cursors */}
-          <h3 className="font-bold text-lg mb-2">🖱️ Active Cursors</h3>
-          <div className="mb-3 bg-[#141416] p-2 rounded border border-[#66666e]/30">
-            {Object.values(cursors).length === 0 ? (
-              <p className="text-[#9999a1] text-sm">No active cursors</p>
-            ) : (
-              Object.values(cursors).map((c, i) => (
-                <div key={i} className="text-sm text-purple-400">
-                  {c.username} @ Line {c.position?.startLineNumber}
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Suggestions */}
-          <h3 className="font-bold text-lg mb-2">💡 Suggestions</h3>
-          <div className="flex-1 overflow-y-auto">
-            {suggestions.length === 0 ? (
-              <p className="text-[#9999a1] text-sm">No pending suggestions</p>
-            ) : (
-              suggestions.map((s, i) => (
-                <div key={i} className="bg-[#141416] p-2 mb-2 border border-[#66666e]/30 rounded">
-                  <p className="text-sm">
-                    <b className="text-yellow-400">{s.from}</b>: <code className="text-green-400">{s.suggestion.text}</code>
-                  </p>
-                  {(isOwner || isOwnerRef.current) && (
-                    <div className="flex gap-2 mt-2">
-                      <button 
-                        onClick={() => acceptSuggestion(i)} 
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
-                      >
-                        ✓ Accept
-                      </button>
-                      <button 
-                        onClick={() => rejectSuggestion(i)} 
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
-                      >
-                        ✗ Reject
-                      </button>
+        {/* Sidebar - Collapsible on mobile */}
+        <div className="w-full lg:w-80 bg-[#0b0b0c] text-[#e6e6e9] flex flex-col border-t lg:border-t-0 lg:border-l border-[#66666e]/30 max-h-[50vh] lg:max-h-none overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-3 space-y-4">
+            {/* Chat */}
+            <div>
+              <h3 className="font-bold text-base sm:text-lg mb-2">💬 Chat</h3>
+              <div className="h-32 sm:h-40 overflow-y-auto bg-[#141416] p-2 mb-2 rounded border border-[#66666e]/30">
+                {messages.length === 0 ? (
+                  <p className="text-[#9999a1] text-xs sm:text-sm">No messages yet</p>
+                ) : (
+                  messages.map((m, i) => (
+                    <div key={i} className="text-xs sm:text-sm mb-1">
+                      <b className="text-blue-400">{m.from}</b>: {m.message}
                     </div>
-                  )}
-                </div>
-              ))
-            )}
+                  ))
+                )}
+              </div>
+              <form onSubmit={handleSendChat} className="flex gap-2">
+                <input 
+                  value={chatInput} 
+                  onChange={(e) => setChatInput(e.target.value)} 
+                  placeholder="Type a message..." 
+                  className="flex-1 bg-[#0b0b0c] text-[#f4f4f6] placeholder-[#9999a1] border border-[#66666e]/30 p-2 rounded text-sm"
+                />
+                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">Send</button>
+              </form>
+            </div>
+
+            {/* Cursors */}
+            <div>
+              <h3 className="font-bold text-base sm:text-lg mb-2">🖱️ Active Cursors</h3>
+              <div className="bg-[#141416] p-2 rounded border border-[#66666e]/30 min-h-[60px]">
+                {Object.values(cursors).length === 0 ? (
+                  <p className="text-[#9999a1] text-xs sm:text-sm">No active cursors</p>
+                ) : (
+                  Object.values(cursors).map((c, i) => (
+                    <div key={i} className="text-xs sm:text-sm text-purple-400">
+                      {c.username} @ Line {c.position?.startLineNumber}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Suggestions */}
+            <div>
+              <h3 className="font-bold text-base sm:text-lg mb-2">💡 Suggestions</h3>
+              <div className="space-y-2">
+                {suggestions.length === 0 ? (
+                  <p className="text-[#9999a1] text-xs sm:text-sm">No pending suggestions</p>
+                ) : (
+                  suggestions.map((s, i) => (
+                    <div key={i} className="bg-[#141416] p-3 border border-[#66666e]/30 rounded">
+                      <p className="text-xs sm:text-sm mb-2">
+                        <b className="text-yellow-400">{s.from}</b>: <code className="text-green-400">{s.suggestion.text}</code>
+                      </p>
+                      {(isOwner || isOwnerRef.current) && (
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => acceptSuggestion(i)} 
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-xs sm:text-sm"
+                          >
+                            ✓ Accept
+                          </button>
+                          <button 
+                            onClick={() => rejectSuggestion(i)} 
+                            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-xs sm:text-sm"
+                          >
+                            ✗ Reject
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+              {(!isOwner && !isOwnerRef.current) && (
+                <button 
+                  onClick={handleSuggest} 
+                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 mt-2 rounded font-semibold text-sm"
+                >
+                  📝 Send Suggestion
+                </button>
+              )}
+            </div>
           </div>
-          {(!isOwner && !isOwnerRef.current) && (
-            <button 
-              onClick={handleSuggest} 
-              className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 mt-2 rounded font-semibold"
-            >
-              📝 Send Suggestion
-            </button>
-          )}
         </div>
       </div>
     </div>

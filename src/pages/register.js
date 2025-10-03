@@ -40,22 +40,24 @@ export default function Register() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#000000] via-[#0a0a0f] to-[#000000] text-[#e6e6e9] px-6 py-12">
-            {/* Background decorative elements */}
+           
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
                 <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
             </div>
 
             <div className="w-full max-w-md relative z-10">
-                {/* Logo */}
+               
                 <div className="flex items-center justify-center space-x-2 mb-8">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl"></div>
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-mono">&lt;/&gt;</span>
+                    </div>
                     <span className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                         CollabCo
                     </span>
                 </div>
 
-                {/* Register Card */}
+                
                 <div className="bg-[#141416]/50 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-[#66666e]/30">
                     <div className="text-center mb-8">
                         <h2 className="text-3xl font-bold mb-2">Create Account</h2>

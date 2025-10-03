@@ -75,15 +75,12 @@ export default function Home() {
       alert("Please enter a project ID");
       return;
     }
-    if (!token) {
-      alert("Please login first to join a project");
-      navigate("/login");
-      return;
-    }
+    // If we're in the logged-in view, we already have a token
+    // Just navigate directly to the editor
     navigate(`/editor/${joinId}`);
   };
 
-   const handleDelete = async (projectId) => {
+  const handleDelete = async (projectId) => {
     if (!window.confirm("Are you sure you want to delete this project?")) return;
     
     try {
@@ -111,8 +108,10 @@ export default function Home() {
         <nav className="fixed top-0 w-full bg-[#0b0b0c]/80 backdrop-blur-md border-b border-[#66666e]/20 z-50">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg"></div>
-              <span  className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">CollabCo</span>
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-mono">&lt;/&gt;</span>
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">CollabCo</span>
             </div>
             <div className="flex gap-4">
               <Link to="/login" className="px-4 py-2 text-[#e6e6e9] hover:text-white transition">Login</Link>
@@ -126,7 +125,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto text-center">
             <div className="mb-8 inline-block">
               <span className="px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm font-semibold">
-                ✨ Real-time Collaboration
+              ✨ Real-time Collaboration
               </span>
             </div>
             
@@ -158,7 +157,7 @@ export default function Home() {
                   onClick={handleJoin}
                   className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-xl px-6 py-3 transition transform hover:scale-105"
                 >
-                  Join as Guest →
+                  Join as Guest
                 </button>
               </div>
             </div>
@@ -213,7 +212,9 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-500 rounded"></div>
+                <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-500 rounded flex items-center justify-center">
+                  <span className="text-white font-mono text-xs">&lt;/&gt;</span>
+                </div>
                 <span className="font-semibold">CollabCo</span>
               </div>
               <div className="text-sm text-[#9999a1]">
@@ -237,8 +238,6 @@ export default function Home() {
   // Logged-in Dashboard
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#000000] via-[#0a0a0f] to-[#000000] text-[#e6e6e9]">
-     
-
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Welcome Section */}
         <div className="mb-12">
@@ -339,7 +338,7 @@ export default function Home() {
                         onClick={() => navigate(`/editor/${p._id}`)}
                         className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg text-sm font-semibold transition transform hover:scale-105"
                       >
-                        Open →
+                        Open
                       </button>
                       <button
                         onClick={() => handleDelete(p._id)}
@@ -370,12 +369,13 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="bg-[#0b0b0c]/50 backdrop-blur-sm border-t border-[#66666e]/20 mt-12 py-8">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-500 rounded"></div>
+              <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-500 rounded flex items-center justify-center">
+                <span className="text-white font-mono text-xs">&lt;/&gt;</span>
+              </div>
               <span className="font-semibold">CollabCo</span>
             </div>
             <div className="text-sm text-[#9999a1]">
